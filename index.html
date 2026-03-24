@@ -3,99 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTT NETWORK - Pro Mining</title>
+    <title>GTT NETWORK - Secure Mining</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0a0f1a; color: white; font-family: 'Inter', sans-serif; }
+        body { background-color: #0a0f1a; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .gtt-gradient { background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%); }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .mining-pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.7; } }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4 hidden">
+        <div class="glass p-8 rounded-2xl w-full max-w-sm text-center">
+            <h3 class="text-2xl font-bold mb-2">Welcome to GTT</h3>
+            <p class="text-gray-400 text-sm mb-6">Enter your username to start mining</p>
+            <input type="text" id="username-input" placeholder="Username..." class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 mb-4 focus:outline-none focus:border-cyan-500 text-white">
+            <button onclick="saveUser()" class="w-full gtt-gradient py-3 rounded-lg font-bold text-black uppercase tracking-widest text-sm">Join Network</button>
+        </div>
+    </div>
+
     <nav class="p-5 flex justify-between items-center border-b border-gray-800">
-        <h1 class="text-xl font-bold text-cyan-400 tracking-tighter">GTT.NETWORK</h1>
-        <div id="user-balance" class="bg-gray-800 px-4 py-1 rounded-full border border-gray-700 text-sm">
-            Balance: <span id="balance-amount" class="text-green-400 font-bold">0.00</span> GTT
+        <div class="flex flex-col">
+            <h1 class="text-xl font-bold text-cyan-400 leading-none">GTT.NETWORK</h1>
+            <span id="display-name" class="text-[10px] text-gray-500 uppercase mt-1 tracking-widest">Guest User</span>
+        </div>
+        <div class="bg-gray-900/50 px-4 py-2 rounded-xl border border-gray-800">
+            <span class="text-[10px] text-gray-500 block leading-none mb-1">BALANCE</span>
+            <span id="balance-amount" class="text-green-400 font-mono font-bold">0.00</span> <span class="text-[10px] text-green-700">GTT</span>
         </div>
     </nav>
 
-    <main class="flex-grow flex flex-col items-center justify-center px-5 text-center py-10">
-        <div class="mb-6 flex items-center bg-green-900/20 px-4 py-1 rounded-full border border-green-500/30">
+    <main id="main-ui" class="flex-grow flex flex-col items-center justify-center px-5 text-center py-10">
+        <div class="mb-6 flex items-center bg-cyan-900/20 px-4 py-1 rounded-full border border-cyan-500/30">
             <span id="status-dot" class="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
-            <span id="status-text" class="text-gray-400 text-[10px] font-mono uppercase tracking-widest text-xs">Waiting to Start</span>
+            <span id="status-text" class="text-gray-400 text-[10px] font-mono uppercase tracking-widest">System Standby</span>
         </div>
 
-        <h2 class="text-5xl md:text-7xl font-black mb-2 tracking-tight">GTT <span class="text-cyan-400">NET</span></h2>
-        
-        <div id="timer-container" class="hidden my-6">
-            <p class="text-gray-500 text-xs uppercase mb-1">Next claim in:</p>
-            <p id="countdown" class="text-3xl font-mono text-white font-bold">24:00:00</p>
+        <div id="timer-box" class="hidden mb-6">
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest mb-1">Next Claim In</p>
+            <p id="countdown" class="text-4xl font-mono font-black text-white">24:00:00</p>
         </div>
 
-        <p id="info-text" class="max-w-md text-gray-500 mb-10 text-sm leading-relaxed mt-4">
-            Start your daily mining session to earn 25.00 GTT tokens.
-        </p>
+        <h2 class="text-4xl font-black mb-8 italic tracking-tighter italic">EARN <span class="text-cyan-400 underline">GTT</span> DAILY</h2>
 
-        <div class="w-full max-w-xs">
-            <button id="mine-btn" onclick="handleMining()" class="w-full gtt-gradient py-4 rounded-xl font-bold text-black uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-cyan-500/20">
-                ⚡ Start Mining Free
+        <div class="w-full max-w-xs space-y-3">
+            <button id="mine-btn" onclick="handleMining()" class="w-full gtt-gradient py-4 rounded-xl font-bold text-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-cyan-500/10">
+                ⚡ Start Mining
             </button>
+            <p class="text-[10px] text-gray-600 uppercase tracking-widest">Rate: 25.00 GTT / 24h</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-12 mt-16 border-t border-gray-800 pt-10 w-full max-w-sm">
-            <div>
-                <p class="text-2xl font-bold text-white">24,912</p>
-                <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Miners</p>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-white">8.2M+</p>
-                <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Total Mined</p>
-            </div>
+        <div class="mt-16 grid grid-cols-3 gap-4 w-full max-w-md opacity-40 italic">
+            <div class="text-center"><p class="text-sm font-bold">24K</p><p class="text-[8px] uppercase">Nodes</p></div>
+            <div class="text-center"><p class="text-sm font-bold">8.2M</p><p class="text-[8px] uppercase">Mined</p></div>
+            <div class="text-center"><p class="text-sm font-bold">$0.12</p><p class="text-[8px] uppercase">Est. Price</p></div>
         </div>
     </main>
 
     <script>
         let balance = parseFloat(localStorage.getItem('gtt_balance')) || 0;
         let nextMineTime = localStorage.getItem('next_mine_time');
-        
-        const btn = document.getElementById('mine-btn');
-        const timerCont = document.getElementById('timer-container');
-        const countdownDisplay = document.getElementById('countdown');
-        const statusDot = document.getElementById('status-dot');
-        const statusText = document.getElementById('status-text');
+        let username = localStorage.getItem('gtt_username');
+
+        const loginModal = document.getElementById('login-modal');
+        const displayName = document.getElementById('display-name');
         const balDisplay = document.getElementById('balance-amount');
+
+        // Check if user is logged in
+        if (!username) {
+            loginModal.classList.remove('hidden');
+        } else {
+            displayName.innerText = username;
+        }
 
         balDisplay.innerText = balance.toFixed(2);
 
+        function saveUser() {
+            const input = document.getElementById('username-input').value;
+            if (input.length > 2) {
+                localStorage.setItem('gtt_username', input);
+                username = input;
+                displayName.innerText = username;
+                loginModal.classList.add('hidden');
+            } else {
+                alert("Please enter a longer username");
+            }
+        }
+
         function updateUI() {
             const now = new Date().getTime();
+            const btn = document.getElementById('mine-btn');
+            const timerBox = document.getElementById('timer-box');
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+
             if (nextMineTime && now < nextMineTime) {
                 btn.disabled = true;
-                btn.style.opacity = "0.5";
-                btn.innerText = "Mining in Progress...";
-                timerCont.classList.remove('hidden');
+                btn.style.opacity = "0.3";
+                btn.innerText = "MINING...";
+                timerBox.classList.remove('hidden');
                 statusDot.classList.add('bg-green-500', 'mining-pulse');
-                statusDot.classList.remove('bg-gray-500');
-                statusText.innerText = "Mining Active";
-                statusText.classList.replace('text-gray-400', 'text-green-400');
+                statusText.innerText = "Node Active";
+                statusText.className = "text-green-400 text-[10px] font-mono uppercase tracking-widest";
                 startCountdown();
             }
         }
 
         function handleMining() {
-            const mineDuration = 24 * 60 * 60 * 1000; // 24 hours
             const now = new Date().getTime();
-            nextMineTime = now + mineDuration;
-            
+            nextMineTime = now + (24 * 60 * 60 * 1000);
             localStorage.setItem('next_mine_time', nextMineTime);
             
-            // Add initial 25 GTT
             balance += 25;
             localStorage.setItem('gtt_balance', balance);
             balDisplay.innerText = balance.toFixed(2);
-            
             updateUI();
         }
 
@@ -103,27 +126,18 @@
             const interval = setInterval(() => {
                 const now = new Date().getTime();
                 const distance = nextMineTime - now;
+                const countdownDisplay = document.getElementById('countdown');
 
                 if (distance < 0) {
                     clearInterval(interval);
-                    btn.disabled = false;
-                    btn.style.opacity = "1";
-                    btn.innerText = "⚡ Start Mining Free";
-                    timerCont.classList.add('hidden');
-                    statusDot.classList.remove('bg-green-500', 'mining-pulse');
-                    statusDot.classList.add('bg-gray-500');
-                    statusText.innerText = "Waiting to Start";
+                    location.reload(); // Refresh to reset UI
                     return;
                 }
 
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                countdownDisplay.innerText = 
-                    (hours < 10 ? "0" + hours : hours) + ":" + 
-                    (minutes < 10 ? "0" + minutes : minutes) + ":" + 
-                    (seconds < 10 ? "0" + seconds : seconds);
+                const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((distance % (1000 * 60)) / 1000);
+                countdownDisplay.innerText = `${h < 10 ? '0'+h : h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
             }, 1000);
         }
 
