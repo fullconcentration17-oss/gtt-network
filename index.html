@@ -17,7 +17,7 @@
 
     <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4 hidden">
         <div class="glass p-8 rounded-2xl w-full max-w-sm text-center">
-            <h3 class="text-2xl font-bold mb-2">Welcome to GTT</h3>
+            <h3 class="text-2xl font-bold mb-2 text-white">Welcome to GTT</h3>
             <p class="text-gray-400 text-sm mb-6">Enter your username to start mining</p>
             <input type="text" id="username-input" placeholder="Username..." class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 mb-4 focus:outline-none focus:border-cyan-500 text-white">
             <button onclick="saveUser()" class="w-full gtt-gradient py-3 rounded-lg font-bold text-black uppercase tracking-widest text-sm">Join Network</button>
@@ -25,40 +25,34 @@
     </div>
 
     <nav class="p-5 flex justify-between items-center border-b border-gray-800">
-        <div class="flex flex-col">
+        <div class="flex flex-col text-left">
             <h1 class="text-xl font-bold text-cyan-400 leading-none">GTT Network</h1>
-            <span id="display-name" class="text-[10px] text-gray-500 uppercase mt-1 tracking-widest">Official Mining Node</span>
+            <span class="text-[10px] text-gray-500 uppercase mt-1 tracking-widest">Global Mining Node</span>
         </div>
         <div class="bg-gray-900/50 px-4 py-2 rounded-xl border border-gray-800">
-            <span class="text-[10px] text-gray-500 block leading-none mb-1">BALANCE</span>
+            <span class="text-[10px] text-gray-500 block leading-none mb-1 text-white">BALANCE</span>
             <span id="balance-amount" class="text-green-400 font-mono font-bold text-lg">0.00</span> <span class="text-[10px] text-green-700">GTT</span>
         </div>
     </nav>
 
-    <main id="main-ui" class="flex-grow flex flex-col items-center justify-center px-5 text-center py-10">
+    <main class="flex-grow flex flex-col items-center justify-center px-5 text-center py-10">
         <div class="mb-6 flex items-center bg-cyan-900/20 px-4 py-1 rounded-full border border-cyan-500/30">
             <span id="status-dot" class="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
-            <span id="status-text" class="text-gray-400 text-[10px] font-mono uppercase tracking-widest">System Standby</span>
+            <span id="status-text" class="text-white text-[10px] font-mono uppercase tracking-widest">System Standby</span>
         </div>
 
         <div id="timer-box" class="hidden mb-6">
-            <p class="text-gray-500 text-[10px] uppercase tracking-widest mb-1">Next Claim In</p>
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest mb-1 text-white">Next Claim In</p>
             <p id="countdown" class="text-4xl font-mono font-black text-white">24:00:00</p>
         </div>
 
-        <h2 class="text-5xl font-black mb-8 italic tracking-tighter">GTT NETWORK</h2>
+        <h2 class="text-5xl font-black mb-8 italic tracking-tighter text-white">GTT NETWORK</h2>
 
         <div class="w-full max-w-xs space-y-3">
             <button id="mine-btn" onclick="handleMining()" class="w-full gtt-gradient py-4 rounded-xl font-bold text-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-cyan-500/10">
                 ⚡ Start Mining
             </button>
             <p class="text-[10px] text-gray-600 uppercase tracking-widest">Rate: 25.00 GTT / 24h</p>
-        </div>
-
-        <div class="mt-16 grid grid-cols-3 gap-4 w-full max-w-md opacity-40 italic">
-            <div class="text-center"><p class="text-sm font-bold">24K</p><p class="text-[8px] uppercase">Nodes</p></div>
-            <div class="text-center"><p class="text-sm font-bold">8.2M</p><p class="text-[8px] uppercase">Mined</p></div>
-            <div class="text-center"><p class="text-sm font-bold">$0.12</p><p class="text-[8px] uppercase">Est. Price</p></div>
         </div>
     </main>
 
@@ -68,13 +62,10 @@
         let username = localStorage.getItem('gtt_username');
 
         const loginModal = document.getElementById('login-modal');
-        const displayName = document.getElementById('display-name');
         const balDisplay = document.getElementById('balance-amount');
 
         if (!username) {
             loginModal.classList.remove('hidden');
-        } else {
-            displayName.innerText = "Active: " + username;
         }
 
         balDisplay.innerText = balance.toFixed(2);
@@ -83,8 +74,6 @@
             const input = document.getElementById('username-input').value;
             if (input.length > 2) {
                 localStorage.setItem('gtt_username', input);
-                username = input;
-                displayName.innerText = "Active: " + username;
                 loginModal.classList.add('hidden');
             }
         }
@@ -123,13 +112,7 @@
                 const now = new Date().getTime();
                 const distance = nextMineTime - now;
                 const countdownDisplay = document.getElementById('countdown');
-
-                if (distance < 0) {
-                    clearInterval(interval);
-                    location.reload();
-                    return;
-                }
-
+                if (distance < 0) { clearInterval(interval); location.reload(); return; }
                 const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const s = Math.floor((distance % (1000 * 60)) / 1000);
