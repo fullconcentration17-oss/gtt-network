@@ -3,65 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTT NETWORK - Free Mining</title>
+    <title>GTT NETWORK - Pro Mining</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0a0f1a; color: white; font-family: sans-serif; }
+        body { background-color: #0a0f1a; color: white; font-family: 'Inter', sans-serif; }
         .gtt-gradient { background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%); }
-        .mining-anim { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .mining-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
     <nav class="p-5 flex justify-between items-center border-b border-gray-800">
-        <h1 class="text-xl font-bold text-cyan-400">GTT.NETWORK</h1>
-        <div class="hidden md:flex space-x-6 text-sm text-gray-400">
-            <a href="#">HOW IT WORKS</a>
-            <a href="#">PLANS</a>
-            <a href="#">LEADERBOARD</a>
+        <h1 class="text-xl font-bold text-cyan-400 tracking-tighter">GTT.NETWORK</h1>
+        <div id="user-balance" class="bg-gray-800 px-4 py-1 rounded-full border border-gray-700 text-sm">
+            Balance: <span id="balance-amount" class="text-green-400 font-bold">0.00</span> GTT
         </div>
     </nav>
 
     <main class="flex-grow flex flex-col items-center justify-center px-5 text-center py-10">
-        <div class="mb-4 flex items-center bg-green-900/30 px-4 py-1 rounded-full border border-green-500/50">
-            <span class="w-2 h-2 bg-green-500 rounded-full mr-2 mining-anim"></span>
-            <span class="text-green-400 text-xs font-mono uppercase tracking-widest">Live — 24,891 Miners Active</span>
+        <div class="mb-6 flex items-center bg-green-900/20 px-4 py-1 rounded-full border border-green-500/30">
+            <span id="status-dot" class="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
+            <span id="status-text" class="text-gray-400 text-[10px] font-mono uppercase tracking-widest text-xs">Waiting to Start</span>
         </div>
 
-        <h2 class="text-4xl md:text-6xl font-extrabold mb-2">GTT <span class="text-green-400">NETWORK</span></h2>
-        <p class="text-gray-400 mb-8">Mine <span class="font-bold text-white">GTT Tokens</span> — Completely Free</p>
+        <h2 class="text-5xl md:text-7xl font-black mb-2 tracking-tight">GTT <span class="text-cyan-400">NET</span></h2>
+        
+        <div id="timer-container" class="hidden my-6">
+            <p class="text-gray-500 text-xs uppercase mb-1">Next claim in:</p>
+            <p id="countdown" class="text-3xl font-mono text-white font-bold">24:00:00</p>
+        </div>
 
-        <p class="max-w-md text-gray-500 mb-10 text-sm leading-relaxed">
-            Claim your GTT tokens every 24 hours. No investment needed. GTT will be listed on exchanges — your tokens will have real value.
+        <p id="info-text" class="max-w-md text-gray-500 mb-10 text-sm leading-relaxed mt-4">
+            Start your daily mining session to earn 25.00 GTT tokens.
         </p>
 
-        <div class="w-full max-w-xs space-y-4">
-            <button onclick="startMining()" class="w-full gtt-gradient py-4 rounded-lg font-bold text-black uppercase tracking-wider hover:opacity-90 transition">
+        <div class="w-full max-w-xs">
+            <button id="mine-btn" onclick="handleMining()" class="w-full gtt-gradient py-4 rounded-xl font-bold text-black uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-cyan-500/20">
                 ⚡ Start Mining Free
-            </button>
-            <button class="w-full bg-transparent border border-gray-700 py-4 rounded-lg font-bold text-gray-400 uppercase tracking-wider hover:bg-gray-800 transition">
-                How it Works
             </button>
         </div>
 
-        <div class="grid grid-cols-2 gap-10 mt-20">
+        <div class="grid grid-cols-2 gap-12 mt-16 border-t border-gray-800 pt-10 w-full max-w-sm">
             <div>
-                <p class="text-3xl font-bold text-cyan-400">24,894</p>
-                <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Total Miners</p>
+                <p class="text-2xl font-bold text-white">24,912</p>
+                <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Miners</p>
             </div>
             <div>
-                <p class="text-3xl font-bold text-green-400">8,234,773</p>
-                <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">GTT Mined</p>
+                <p class="text-2xl font-bold text-white">8.2M+</p>
+                <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Total Mined</p>
             </div>
         </div>
     </main>
 
     <script>
-        function startMining() {
-            alert("Mining Started! You will receive 25 GTT in 24 hours.");
-            // აქ შეიძლება დაემატოს ლოგიკა, რომელიც ტაიმერს ჩართავს
+        let balance = parseFloat(localStorage.getItem('gtt_balance')) || 0;
+        let nextMineTime = localStorage.getItem('next_mine_time');
+        
+        const btn = document.getElementById('mine-btn');
+        const timerCont = document.getElementById('timer-container');
+        const countdownDisplay = document.getElementById('countdown');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const balDisplay = document.getElementById('balance-amount');
+
+        balDisplay.innerText = balance.toFixed(2);
+
+        function updateUI() {
+            const now = new Date().getTime();
+            if (nextMineTime && now < nextMineTime) {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                btn.innerText = "Mining in Progress...";
+                timerCont.classList.remove('hidden');
+                statusDot.classList.add('bg-green-500', 'mining-pulse');
+                statusDot.classList.remove('bg-gray-500');
+                statusText.innerText = "Mining Active";
+                statusText.classList.replace('text-gray-400', 'text-green-400');
+                startCountdown();
+            }
         }
+
+        function handleMining() {
+            const mineDuration = 24 * 60 * 60 * 1000; // 24 hours
+            const now = new Date().getTime();
+            nextMineTime = now + mineDuration;
+            
+            localStorage.setItem('next_mine_time', nextMineTime);
+            
+            // Add initial 25 GTT
+            balance += 25;
+            localStorage.setItem('gtt_balance', balance);
+            balDisplay.innerText = balance.toFixed(2);
+            
+            updateUI();
+        }
+
+        function startCountdown() {
+            const interval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = nextMineTime - now;
+
+                if (distance < 0) {
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                    btn.innerText = "⚡ Start Mining Free";
+                    timerCont.classList.add('hidden');
+                    statusDot.classList.remove('bg-green-500', 'mining-pulse');
+                    statusDot.classList.add('bg-gray-500');
+                    statusText.innerText = "Waiting to Start";
+                    return;
+                }
+
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                countdownDisplay.innerText = 
+                    (hours < 10 ? "0" + hours : hours) + ":" + 
+                    (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+                    (seconds < 10 ? "0" + seconds : seconds);
+            }, 1000);
+        }
+
+        updateUI();
     </script>
 </body>
 </html>
